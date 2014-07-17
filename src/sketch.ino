@@ -3,12 +3,26 @@ const int sensorNumber = 16; //Number of sensors
 const int Cam1PowerPin=43; //Control camera control
 const int Cam1GrdPin=45; //should always be ground
 const int Cam1TestPin=41; //not implemented yet
+const int Cam2PowerPin=33; //Control camera control
+const int Cam2GrdPin=35; //should always be ground
+const int Cam2TestPin=31; //not implemented yet
 
-void setup()
-{
+int periodCam1=20000;
+int periodCam2=20000;
+
+int delayCam1=10000;
+int delayCam2=10000;
+
+bool Cam1On,Cam2On;
+int timeCam1, timeCam2;
+
+int sensorValues[sensorNumber];
+unsigned long time;
+char inString[7]="      ";
+
+void setup(){
 	// initialize the serial communication with computer for debug
 	Serial.begin(9600);
-
 	// initialize the serial communication with HASP transmition
 	Serial3.begin(1200);
 	// initialize the ledPin as an output:
@@ -19,6 +33,9 @@ void setup()
 
 	digitalWrite(Cam1GrdPin, HIGH);
 	digitalWrite(Cam1PowerPin, LOW);
+
+	timeCam1=0;
+	timeCam2=0;
 
 }
 
@@ -40,21 +57,19 @@ void TurnCamOff(int CamPowerPin, int CamTestPin){
 
 void ReadSensors(int* sensorArray) {
 	int i;
-	for(i=0;i<sensorNumber;i++){
+	for(i=0;i<sensorNumber;i++){ // reads each sensor
 		sensorArray[i]=analogRead(i);
 	}
 }
 
-
 void DebugSensors(int* sensorArray) {
 	int i;
-	for(i=0;i<sensorNumber;i++){
+	for(i=0;i<sensorNumber;i++){ //print each sensor value
 		Serial.print(sensorArray[i]*5.0/1023);
 		Serial.print("  ");
 	}
 	Serial.println();
 }
-
 
 void SendSensors(int* sensorArray) {
 	int i,checksum;
@@ -63,28 +78,67 @@ void SendSensors(int* sensorArray) {
 	Serial3.print("!");
 	for(i=0;i<sensorNumber;i++){
 		Serial3.write(sensorArray[i]);
-			checksum+=sensorArray[i];
-		if(i<sensorNumber-1){
-		Serial3.print(",");
-		checksum+= (int)',';
-		}
+		checksum+=sensorArray[i];
 	}
-	Serial3.print("*");
 	Serial3.write(checksum);
 	Serial3.println();
 	Serial3.flush();
 }
 
+void ReadSerial(){
+	while (Serial3.available()>0) {
+		for(int i=1;i<7;i++) {
+			inString[i]=inString[i+1];
+		}
+		inString[7]=Serial3.read();
+		if (inString[0]==(char) 1 && inString[1]==(char) 2 && inString[4]==(char) 3 && inString[5]==(char) 13 && inString[6]==(char) 10){
+			if (inString[2]==(char)0 && inString[3]==(char)255){ // low frequency pictures
+				delayCam1=240000;
+				delayCam2=240000;
+			}
+			if (inString[2]==(char)255 && inString[3]==(char)0){//medium frequency pictures
+				delayCam1=60000;
+				delayCam2=60000;
+			}
+			if (inString[2]==(char)255 && inString[3]==(char)255){//high frequency pictures
+				delayCam1=30000;
+				delayCam2=30000;
+			}
+			if (inString[2]==(char)0 && inString[3]==(char)0){
+				delayCam1=60000000; //set a picture every 1000 minutes
+				delayCam2=60000000;
+			}
+		}
+
+	}
+}
 
 void loop() {
-	int sensorValues[sensorNumber];
+	ReadSerial();
 	ReadSensors(sensorValues);
 	//DebugSensors(sensorValues);
 	SendSensors(sensorValues);
-	TurnCamOn(Cam1PowerPin,Cam1TestPin);
-	delay(20000);
-	TurnCamOff(Cam1PowerPin,Cam1TestPin);
-	delay(10000);
+
+	Cam1On=digitalRead(Cam1TestPin);
+	Cam2On=digitalRead(Cam2TestPin);
+
+	if (Cam1On && millis()>timeCam1+periodCam1){
+		TurnCamOn(Cam1PowerPin,Cam1TestPin);
+		timeCam1=millis();
+	}
+	if (!Cam1On && millis()>timeCam1+delayCam1){
+		TurnCamOff(Cam1PowerPin,Cam1TestPin);
+	}
+
+	if (Cam2On && millis()>timeCam2+periodCam2){ // Do we want the pic at the same time (battery usage?)
+		TurnCamOn(Cam2PowerPin,Cam2TestPin);
+		timeCam2=millis();
+	}
+	if (!Cam2On && millis()>timeCam2+delayCam2){
+		TurnCamOff(Cam2PowerPin,Cam2TestPin);
+	}
+
+	delay(3000);
 
 }
 
