@@ -35,19 +35,22 @@ void setup(){
 	digitalWrite(Cam1PowerPin, LOW);
 
 	Cam1On=false;
+	TurnCamOn(Cam1PowerPin);
+	delay(4000);
+	TurnCamOff(Cam1PowerPin);
 	timeCam1=0;
 	timeCam2=0;
 
 }
 
-void TurnCamOn(int CamPowerPin, int CamTestPin){
+void TurnCamOn(int CamPowerPin){
 	// Dumb on function
 	digitalWrite(Cam1PowerPin, HIGH);
 	delay(100);
 	digitalWrite(Cam1PowerPin, LOW);
 }
 
-void TurnCamOff(int CamPowerPin, int CamTestPin){
+void TurnCamOff(int CamPowerPin){
 	// Dumb on function
 	digitalWrite(Cam1PowerPin, HIGH);
 	delay(1200);
@@ -136,13 +139,13 @@ void loop() {
 
 	if (!Cam1On && millis()>(timeCam1+periodCam1)){
 		Serial.println("Cam1 on ");
-		TurnCamOn(Cam1PowerPin,Cam1TestPin);
+		TurnCamOn(Cam1PowerPin);
 		timeCam1=millis();
 		Cam1On==true;
 	}
 	else if (Cam1On && millis()>timeCam1+delayCam1){
 		Serial.println("Cam1 off");
-		TurnCamOff(Cam1PowerPin,Cam1TestPin);
+		TurnCamOff(Cam1PowerPin);
 		Cam1On=false;
 	}
 
