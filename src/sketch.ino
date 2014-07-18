@@ -2,19 +2,19 @@ const int ledPin = 13;      // the pin that the LED is attached to
 const int sensorNumber = 16; //Number of sensors
 const int Cam1PowerPin=43; //Control camera control
 const int Cam1GrdPin=45; //should always be ground
-const int Cam1TestPin=41; //not implemented yet
+const int Cam1TestPin=51; //not implemented yet
 const int Cam2PowerPin=33; //Control camera control
 const int Cam2GrdPin=35; //should always be ground
 const int Cam2TestPin=31; //not implemented yet
 
-int periodCam1=20000;
-int periodCam2=20000;
+unsigned long periodCam1=40000;
+unsigned long periodCam2=40000;
 
-int delayCam1=10000;
-int delayCam2=10000;
+unsigned long delayCam1=10000;
+unsigned long delayCam2=10000;
 
 bool Cam1On,Cam2On;
-int timeCam1, timeCam2;
+unsigned long timeCam1, timeCam2;
 
 int sensorValues[sensorNumber];
 unsigned long time;
@@ -34,6 +34,7 @@ void setup(){
 	digitalWrite(Cam1GrdPin, HIGH);
 	digitalWrite(Cam1PowerPin, LOW);
 
+	Cam1On=false;
 	timeCam1=0;
 	timeCam2=0;
 
@@ -41,7 +42,6 @@ void setup(){
 
 void TurnCamOn(int CamPowerPin, int CamTestPin){
 	// Dumb on function
-	digitalWrite(Cam1PowerPin, LOW);
 	digitalWrite(Cam1PowerPin, HIGH);
 	delay(100);
 	digitalWrite(Cam1PowerPin, LOW);
@@ -49,7 +49,6 @@ void TurnCamOn(int CamPowerPin, int CamTestPin){
 
 void TurnCamOff(int CamPowerPin, int CamTestPin){
 	// Dumb on function
-	digitalWrite(Cam1PowerPin, LOW);
 	digitalWrite(Cam1PowerPin, HIGH);
 	delay(1200);
 	digitalWrite(Cam1PowerPin, LOW);
@@ -118,27 +117,44 @@ void loop() {
 	ReadSensors(sensorValues);
 	//DebugSensors(sensorValues);
 	SendSensors(sensorValues);
+	Serial.println("");
+	Serial.print("sensor sent, time ");
+	Serial.println(millis());
+	Serial.print("next pic at");
+	Serial.println((timeCam1+periodCam1));
 
-	Cam1On=digitalRead(Cam1TestPin);
-	Cam2On=digitalRead(Cam2TestPin);
 
-	if (Cam1On && millis()>timeCam1+periodCam1){
+//	Cam1On=digitalRead(Cam1TestPin);
+//	if (Cam1On==HIGH){
+//	Serial.println("test cam 1 on");
+//	}	
+//	else if (Cam1On==LOW){
+//	Serial.println("test cam 1 off");
+//	}
+//	Cam2On=digitalRead(Cam2TestPin);
+
+
+	if (!Cam1On && millis()>(timeCam1+periodCam1)){
+		Serial.println("Cam1 on ");
 		TurnCamOn(Cam1PowerPin,Cam1TestPin);
 		timeCam1=millis();
+		Cam1On==true;
 	}
-	if (!Cam1On && millis()>timeCam1+delayCam1){
+	else if (Cam1On && millis()>timeCam1+delayCam1){
+		Serial.println("Cam1 off");
 		TurnCamOff(Cam1PowerPin,Cam1TestPin);
+		Cam1On=false;
 	}
 
-	if (Cam2On && millis()>timeCam2+periodCam2){ // Do we want the pic at the same time (battery usage?)
-		TurnCamOn(Cam2PowerPin,Cam2TestPin);
-		timeCam2=millis();
-	}
-	if (!Cam2On && millis()>timeCam2+delayCam2){
-		TurnCamOff(Cam2PowerPin,Cam2TestPin);
-	}
-
-	delay(3000);
+//	if (Cam2On && millis()>timeCam2+periodCam2){ // Do we want the pic at the same time (battery usage?)
+//		TurnCamOn(Cam2PowerPin,Cam2TestPin);
+//		timeCam2=millis();
+//	}
+//	if (!Cam2On && millis()>timeCam2+delayCam2){
+//		TurnCamOff(Cam2PowerPin,Cam2TestPin);
+//	}
+//
+	delay(5000);
 
 }
 
