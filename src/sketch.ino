@@ -1,5 +1,5 @@
 const int ledPin = 13;      // the pin that the LED is attached to
-const int sensorNumber = 16; //Number of sensors
+const int sensorNumber = 14; //Number of sensors
 const int Cam1PowerPin=43; //Control camera control
 const int Cam1GrdPin=45; //should always be ground
 const int Cam1TestPin=51; //not implemented yet
@@ -59,6 +59,21 @@ void TurnCamOff(int CamPowerPin){
 
 void ReadSensors(int* sensorArray) {
 	int i;
+	/* Sensors values, meaning:
+	   - 1: V V_mppt1 + V_mppt2
+	   - 2: A MPPT1
+	   - 3: V sp1 + V_mppt2
+	   - 4: A Sp1
+	   - 5: V_mppt2
+	   - 6: A mppt2
+	   - 7: V sp2
+	   - 8: A sp2
+	   - 9: V batt
+	   - 10: A batt
+	   - 11: V cam2
+	   - 12: A_cam2
+	   - 13: V cam1
+	   - 14: A_cam1 */ 
 	for(i=0;i<sensorNumber;i++){ // reads each sensor
 		sensorArray[i]=analogRead(i);
 	}
@@ -66,6 +81,7 @@ void ReadSensors(int* sensorArray) {
 
 void DebugSensors(int* sensorArray) {
 	int i;
+	
 	for(i=0;i<sensorNumber;i++){ //print each sensor value
 		Serial.print(sensorArray[i]*5.0/1023);
 		Serial.print("  ");
