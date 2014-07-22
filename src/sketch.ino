@@ -43,6 +43,9 @@ void setup(){
 	timeCam1=0;
 	timeCam2=0;
 
+		for(int j=0;j<sensorNumber;j++){
+			pinMode(j,INPUT);
+		}
 }
 
 void TurnCamOn(int CamPowerPin){
