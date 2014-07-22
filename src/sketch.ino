@@ -7,8 +7,8 @@ const int Cam2GrdPin=33; //should always be ground
 unsigned long periodCam1=30000;
 unsigned long periodCam2=30000;
 
-unsigned long delayCam1=15000;
-unsigned long delayCam2=15000;
+unsigned long delayCam1=10000;
+unsigned long delayCam2=10000;
 
 bool Cam1On,Cam2On;
 unsigned long timeCam1, timeCam2;
@@ -36,12 +36,13 @@ void setup(){
 	Cam1On=false;
 	Cam2On=false;
 	TurnCamOn(Cam1PowerPin);
-	TurnCamOn(Cam2PowerPin);
 	delay(4000);
 	TurnCamOff(Cam1PowerPin);
+	TurnCamOn(Cam2PowerPin);
+	delay(4000);
 	TurnCamOff(Cam2PowerPin);
 	timeCam1=0;
-	timeCam2=0;
+	timeCam2=periodCam1/2;
 
 		for(int j=0;j<sensorNumber;j++){
 			pinMode(j,INPUT);
@@ -58,7 +59,7 @@ void TurnCamOn(int CamPowerPin){
 void TurnCamOff(int CamPowerPin){
 	// Dumb on function
 	digitalWrite(CamPowerPin, HIGH);
-	delay(1200);
+	delay(2500);
 	digitalWrite(CamPowerPin, LOW);
 }
 
@@ -144,7 +145,7 @@ void ReadSerial(){
 				delayCam1=30000;
 				delayCam2=30000;
 			}
-			if (inString[2]==(char)0 && inString[3]==(char)0){
+			if (inString[2]==(char)0 && inString[3]==(char)0){//camera off
 				delayCam1=60000000; //set a picture every 1000 minutes
 				delayCam2=60000000;
 			}
@@ -175,7 +176,7 @@ void loop() {
 	//	Cam2On=digitalRead(Cam2TestPin);
 
 
-	if (!Cam1On && millis()>(timeCam1+periodCam1)){
+	if (!Cam1On && !Cam2On && millis()>(timeCam1+periodCam1)){
 		Serial.println("Cam1 on ");
 		TurnCamOn(Cam1PowerPin);
 		timeCam1=millis();
@@ -186,7 +187,7 @@ void loop() {
 		TurnCamOff(Cam1PowerPin);
 		Cam1On=false;
 	}
-	if (!Cam2On && millis()>(timeCam2+periodCam2)){
+	if (!Cam2On && !Cam1On && millis()>(timeCam2+periodCam2)){
 		Serial.println("Cam2 on ");
 		TurnCamOn(Cam2PowerPin);
 		timeCam2=millis();
