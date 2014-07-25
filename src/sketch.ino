@@ -13,7 +13,7 @@ unsigned long delayCam2=10000;
 bool Cam1On,Cam2On;
 unsigned long timeCam1, timeCam2;
 
-int sensorValues[sensorNumber];
+unsigned int sensorValues[sensorNumber];
 unsigned long time;
 char inString[7]="      ";
 
@@ -63,7 +63,7 @@ void TurnCamOff(int CamPowerPin){
 	digitalWrite(CamPowerPin, LOW);
 }
 
-void ReadSensors(int* sensorArray) {
+void ReadSensors(unsigned int* sensorArray) {
 	int i;
 	/* Sensors values, meaning:
 	   - 1: V V_mppt1 + V_mppt2
@@ -85,7 +85,7 @@ void ReadSensors(int* sensorArray) {
 	}
 }
 
-void DebugSensors(int* sensorArray) {
+void DebugSensors(unsigned int* sensorArray) {
 	int i;
 	Serial.print("Vm1   ");
 	Serial.print("Am1   ");
@@ -112,14 +112,22 @@ void DebugSensors(int* sensorArray) {
 	Serial.println();
 }
 
-void SendSensors(int* sensorArray) {
-	int i,checksum;
-	checksum=(int)'!';
+void SendSensors(unsigned int* sensorArray) {
+	int i;
+	byte checksum=0;
 
 	Serial3.print("!");
+	checksum=checksum^(byte)'!';
+	Serial3.write(Cam1On);
+	checksum=checksum^((byte)Cam1On);
+	Serial3.write(Cam2On);
+	checksum=checksum^((byte)Cam2On);
+
 	for(i=0;i<sensorNumber;i++){
-		Serial3.write(sensorArray[i]);
-		checksum+=sensorArray[i];
+		Serial3.write(lowByte(sensorArray[i]));
+		checksum=checksum^lowByte(sensorArray[i]);
+		Serial3.write(lowByte(sensorArray[i]>>8));
+		checksum=checksum^lowByte(sensorArray[i]>>8);
 	}
 	Serial3.write(checksum);
 	Serial3.println();
@@ -136,22 +144,27 @@ void ReadSerial(){
 			if (inString[2]==(char)0 && inString[3]==(char)255){ // low frequency pictures
 				delayCam1=240000;
 				delayCam2=240000;
+				Serial3.println("low frequency mode");
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)0){//medium frequency pictures
 				delayCam1=60000;
 				delayCam2=60000;
+				Serial3.println("normal frequency mode");
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)255){//high frequency pictures
 				delayCam1=30000;
 				delayCam2=30000;
+				Serial3.println("high frequency mode");
 			}
 			if (inString[2]==(char)0 && inString[3]==(char)0){//camera off
 				delayCam1=60000000; //set a picture every 1000 minutes
 				delayCam2=60000000;
+				Serial3.println("no pictures mode");
 			}
 		}
 
 	}
+	Serial3.flush();
 }
 
 void loop() {
