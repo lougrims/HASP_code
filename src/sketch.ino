@@ -14,7 +14,6 @@ bool Cam1On,Cam2On;
 unsigned long timeCam1, timeCam2;
 
 unsigned int sensorValues[sensorNumber];
-unsigned long time;
 char inString[7]="      ";
 
 void setup(){
@@ -114,6 +113,7 @@ void DebugSensors(unsigned int* sensorArray) {
 
 void SendSensors(unsigned int* sensorArray) {
 	int i;
+	unsigned long time;
 	byte checksum=0;
 
 	Serial3.print("!");
@@ -129,6 +129,15 @@ void SendSensors(unsigned int* sensorArray) {
 		Serial3.write(lowByte(sensorArray[i]>>8));
 		checksum=checksum^lowByte(sensorArray[i]>>8);
 	}
+	time=millis();
+	Serial3.write(lowByte(time));
+	checksum=checksum^lowByte(time);
+	Serial3.write(lowByte(time)>>8);
+	checksum=checksum^lowByte(time>>8);
+	Serial3.write(lowByte(time)>>16);
+	checksum=checksum^lowByte(time>>16);
+	Serial3.write(lowByte(time)>>24);
+	checksum=checksum^lowByte(time>>24);
 	Serial3.write(checksum);
 	Serial3.println();
 	Serial3.flush();
