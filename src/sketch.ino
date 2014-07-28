@@ -132,11 +132,11 @@ void SendSensors(unsigned int* sensorArray) {
 	time=millis();
 	Serial3.write(lowByte(time));
 	checksum=checksum^lowByte(time);
-	Serial3.write(lowByte(time)>>8);
+	Serial3.write(lowByte(time>>8));
 	checksum=checksum^lowByte(time>>8);
-	Serial3.write(lowByte(time)>>16);
+	Serial3.write(lowByte(time>>16));
 	checksum=checksum^lowByte(time>>16);
-	Serial3.write(lowByte(time)>>24);
+	Serial3.write(lowByte(time>>24));
 	checksum=checksum^lowByte(time>>24);
 	Serial3.write(checksum);
 	Serial3.println();
