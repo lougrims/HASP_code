@@ -18,7 +18,7 @@ char inString[7]="      ";
 
 void setup(){
 	// initialize the serial communication with computer for debug
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	// initialize the serial communication with HASP transmition
 	Serial3.begin(1200);
 	// initialize the ledPin as an output:
@@ -86,29 +86,29 @@ void ReadSensors(unsigned int* sensorArray) {
 
 void DebugSensors(unsigned int* sensorArray) {
 	int i;
-	Serial.print("Vm1   ");
-	Serial.print("Am1   ");
-	Serial.print("Vs1   ");
-	Serial.print("As1   ");
-	Serial.print("Vm2   ");
-	Serial.print("Am2   ");
-	Serial.print("Vs2   ");
-	Serial.print("As2   ");
-	Serial.print("Vba   ");
-	Serial.print("Aba   ");
-	Serial.print("Vc2   ");
-	Serial.print("Ac2   ");
-	Serial.print("Vc1   ");
-	Serial.println("Ac1   ");
+	//Serial.print("Vm1   ");
+	//Serial.print("Am1   ");
+	//Serial.print("Vs1   ");
+	//Serial.print("As1   ");
+	//Serial.print("Vm2   ");
+	//Serial.print("Am2   ");
+	//Serial.print("Vs2   ");
+	//Serial.print("As2   ");
+	//Serial.print("Vba   ");
+	//Serial.print("Aba   ");
+	//Serial.print("Vc2   ");
+	//Serial.print("Ac2   ");
+	//Serial.print("Vc1   ");
+	//Serial.println("Ac1   ");
 
 	sensorArray[0]-=sensorArray[4];
 	sensorArray[2]-=sensorArray[4];
 
 	for(i=0;i<sensorNumber;i++){ //print each sensor value
-		Serial.print(sensorArray[i]*5.0/1023);
-		Serial.print("  ");
+		//Serial.print(sensorArray[i]*5.0/1023);
+		//Serial.print("  ");
 	}
-	Serial.println();
+	//Serial.println();
 }
 
 void SendSensors(unsigned int* sensorArray) {
@@ -181,16 +181,16 @@ void loop() {
 	ReadSensors(sensorValues);
 	DebugSensors(sensorValues);
 	SendSensors(sensorValues);
-	Serial.println("");
-	Serial.print("sensor sent, time ");
-	Serial.print(millis());
-	Serial.print(" next pic at ");
-	Serial.println((timeCam1+periodCam1));
+	//Serial.println("");
+	//Serial.print("sensor sent, time ");
+	//Serial.print(millis());
+	//Serial.print(" next pic at ");
+	//Serial.println((timeCam1+periodCam1));
 
 
 	//	Cam1On=digitalRead(Cam1TestPin);
 	//	if (Cam1On==HIGH){
-	//	Serial.println("test cam 1 on");
+	//	//Serial.println("test cam 1 on");
 	//	}	
 	//	else if (Cam1On==LOW){
 	//	Serial.println("test cam 1 off");
@@ -199,24 +199,24 @@ void loop() {
 
 
 	if (!Cam1On && !Cam2On && millis()>(timeCam1+periodCam1)){
-		Serial.println("Cam1 on ");
+		//Serial.println("Cam1 on ");
 		TurnCamOn(Cam1PowerPin);
 		timeCam1=millis();
 		Cam1On=true;
 	}
 	else if (Cam1On && millis()>timeCam1+delayCam1){
-		Serial.println("Cam1 off");
+		//Serial.println("Cam1 off");
 		TurnCamOff(Cam1PowerPin);
 		Cam1On=false;
 	}
 	if (!Cam2On && !Cam1On && millis()>(timeCam2+periodCam2)){
-		Serial.println("Cam2 on ");
+		//Serial.println("Cam2 on ");
 		TurnCamOn(Cam2PowerPin);
 		timeCam2=millis();
 		Cam2On=true;
 	}
 	else if (Cam2On && millis()>timeCam2+delayCam2){
-		Serial.println("Cam2 off");
+		//Serial.println("Cam2 off");
 		TurnCamOff(Cam2PowerPin);
 		Cam2On=false;
 	}
