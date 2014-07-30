@@ -4,11 +4,12 @@ const int Cam1GrdPin=45; //should always be ground
 const int Cam2PowerPin=35; //Control camera control
 const int Cam2GrdPin=33; //should always be ground
 
-unsigned long periodCam1=30000;
-unsigned long periodCam2=30000;
+unsigned long periodCam1=120000;
+unsigned long periodCam2=120000;
 
-unsigned long delayCam1=10000;
-unsigned long delayCam2=10000;
+const unsigned long delayCam1=10000;
+const unsigned long delayCam2=10000;
+
 
 bool Cam1On,Cam2On;
 unsigned long timeCam1, timeCam2;
@@ -43,9 +44,9 @@ void setup(){
 	timeCam1=0;
 	timeCam2=periodCam1/2;
 
-		for(int j=0;j<sensorNumber;j++){
-			pinMode(j,INPUT);
-		}
+		//for(int j=0;j<sensorNumber;j++){
+		//	pinMode(j,INPUT);
+		//}
 }
 
 void TurnCamOn(int CamPowerPin){
@@ -145,30 +146,34 @@ void SendSensors(unsigned int* sensorArray) {
 
 void ReadSerial(){
 	while (Serial3.available()>0) {
-		for(int i=1;i<7;i++) {
+		for(int i=0;i<6;i++) {
 			inString[i]=inString[i+1];
 		}
-		inString[7]=Serial3.read();
-		if (inString[0]==(char) 1 && inString[1]==(char) 2 && inString[4]==(char) 3 && inString[5]==(char) 13 && inString[6]==(char) 10){
+		inString[6]=Serial3.read();
+		if (inString[0]==((char) 1) && inString[1]==((char) 2) && inString[4]==((char) 3) && inString[5]==((char) 13) && inString[6]==((char) 10)){
 			if (inString[2]==(char)0 && inString[3]==(char)255){ // low frequency pictures
-				delayCam1=240000;
-				delayCam2=240000;
+				periodCam1=300000;
+				periodCam2=300000;
 				Serial3.println("low frequency mode");
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)0){//medium frequency pictures
-				delayCam1=60000;
-				delayCam2=60000;
+				periodCam1=120000;
+				periodCam2=120000;
 				Serial3.println("normal frequency mode");
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)255){//high frequency pictures
-				delayCam1=30000;
-				delayCam2=30000;
+				periodCam1=30000;
+				periodCam2=30000;
 				Serial3.println("high frequency mode");
 			}
 			if (inString[2]==(char)0 && inString[3]==(char)0){//camera off
-				delayCam1=60000000; //set a picture every 1000 minutes
-				delayCam2=60000000;
+				periodCam1=60000000; //set a picture every 1000 minutes
+				periodCam2=60000000;
 				Serial3.println("no pictures mode");
+		TurnCamOff(Cam1PowerPin);
+		Cam1On=false;
+		TurnCamOff(Cam2PowerPin);
+		Cam2On=false;
 			}
 		}
 
