@@ -3,6 +3,8 @@ const int Cam1PowerPin=43; //Control camera control
 const int Cam1GrdPin=45; //should always be ground
 const int Cam2PowerPin=35; //Control camera control
 const int Cam2GrdPin=33; //should always be ground
+const int Cam1mosfet=6;
+const int Cam2mosfet=7;
 
 unsigned long periodCam1=120000;
 unsigned long periodCam2=120000;
@@ -27,7 +29,11 @@ void setup(){
 	pinMode(Cam1GrdPin, OUTPUT);
 	pinMode(Cam2PowerPin, OUTPUT);
 	pinMode(Cam2GrdPin, OUTPUT);
+	pinMode(Cam1mosfet, OUTPUT);
+	pinMode(Cam2mosfet, OUTPUT);
 
+	digitalWrite(Cam1mosfet, HIGH);
+	digitalWrite(Cam2mosfet, HIGH);
 	digitalWrite(Cam1GrdPin, HIGH);
 	digitalWrite(Cam1PowerPin, LOW);
 	digitalWrite(Cam2GrdPin, HIGH);
@@ -44,9 +50,9 @@ void setup(){
 	timeCam1=0;
 	timeCam2=periodCam1/2;
 
-		//for(int j=0;j<sensorNumber;j++){
-		//	pinMode(j,INPUT);
-		//}
+	//for(int j=0;j<sensorNumber;j++){
+	//	pinMode(j,INPUT);
+	//}
 }
 
 void TurnCamOn(int CamPowerPin){
@@ -130,6 +136,7 @@ void SendSensors(unsigned int* sensorArray) {
 		Serial3.write(lowByte(sensorArray[i]>>8));
 		checksum=checksum^lowByte(sensorArray[i]>>8);
 	}
+
 	time=millis();
 	Serial3.write(lowByte(time));
 	checksum=checksum^lowByte(time);
@@ -155,26 +162,43 @@ void ReadSerial(){
 				periodCam1=300000;
 				periodCam2=300000;
 				Serial3.println("low frequency mode");
+				digitalWrite(Cam1mosfet, HIGH);
+				digitalWrite(Cam2mosfet, HIGH);
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)0){//medium frequency pictures
 				periodCam1=120000;
 				periodCam2=120000;
 				Serial3.println("normal frequency mode");
+				digitalWrite(Cam1mosfet, HIGH);
+				digitalWrite(Cam2mosfet, HIGH);
 			}
 			if (inString[2]==(char)255 && inString[3]==(char)255){//high frequency pictures
 				periodCam1=30000;
 				periodCam2=30000;
 				Serial3.println("high frequency mode");
+				digitalWrite(Cam1mosfet, HIGH);
+				digitalWrite(Cam2mosfet, HIGH);
 			}
 			if (inString[2]==(char)0 && inString[3]==(char)0){//camera off
 				periodCam1=60000000; //set a picture every 1000 minutes
 				periodCam2=60000000;
 				Serial3.println("no pictures mode");
-		TurnCamOff(Cam1PowerPin);
-		Cam1On=false;
-		TurnCamOff(Cam2PowerPin);
-		Cam2On=false;
+				TurnCamOff(Cam1PowerPin);
+				Cam1On=false;
+				TurnCamOff(Cam2PowerPin);
+				Cam2On=false;
+				digitalWrite(Cam1mosfet, LOW);
+				digitalWrite(Cam2mosfet, LOW);
 			}
+			if (inString[2]==(char)1 && inString[3]==(char)0){//camera 2 off with mosfet
+				Serial3.println("camera 2 mosfet off");
+				digitalWrite(Cam2mosfet, LOW);
+			}
+			if (inString[2]==(char)0 && inString[3]==(char)1){//camera 1 off with mosfet
+				Serial3.println("camera 1 mosfet off");
+				digitalWrite(Cam1mosfet, LOW);
+			}
+
 		}
 
 	}
@@ -182,10 +206,10 @@ void ReadSerial(){
 }
 
 void loop() {
-	ReadSerial();
 	ReadSensors(sensorValues);
-	DebugSensors(sensorValues);
+	//	DebugSensors(sensorValues);
 	SendSensors(sensorValues);
+	ReadSerial();
 	//Serial.println("");
 	//Serial.print("sensor sent, time ");
 	//Serial.print(millis());
